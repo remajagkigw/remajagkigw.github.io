@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Komisi Remaja - Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            background-color: #87CEEB;
+        }
+        
+        /* Container Video & Background */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -10;
+        }
+
+        .video-bg {
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -5;
+        }
+
+        .jesus-text-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Cinzel', serif;
+            font-size: 18vw;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.2); 
+            z-index: -2;
+            pointer-events: none;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            z-index: 10;
+        }
+
+        /* Styles untuk Menu Fullscreen */
+        #menuOverlay {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s;
+        }
+        
+        /* Animasi Fade In */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* Scrollbar kustom untuk menu */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- 1. Background Video -->
+    <div class="video-container">
+        <video class="video-bg" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+            <source src="https://static.videezy.com/system/resources/previews/000/043/335/original/200122_01_Clouds_4k_016.mp4" type="video/mp4">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-white-clouds-on-blue-sky-zoom-in-1153-large.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- 2. Overlay & Text -->
+    <div class="bg-overlay"></div>
+    <div class="jesus-text-bg">JESUS</div>
+
+    <!-- 3. TOMBOL MENU (Hamburger) -->
+    <button onclick="toggleMenu()" class="fixed top-6 right-6 z-50 bg-white/30 backdrop-blur-md border border-white/40 text-white p-3 rounded-full hover:bg-white/50 transition-all shadow-lg group">
+        <i class="fas fa-bars text-xl w-6 h-6 flex items-center justify-center group-hover:rotate-180 transition-transform duration-300"></i>
+    </button>
+
+    <!-- 4. MODAL MENU OVERLAY (Hidden by default) -->
+    <div id="menuOverlay" class="fixed inset-0 bg-white/95 backdrop-blur-xl z-[60] opacity-0 invisible overflow-hidden flex flex-col">
+        
+        <!-- Header Menu -->
+        <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 tracking-wide">MENU</h2>
+            <button onclick="toggleMenu()" class="text-gray-500 hover:text-red-500 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Isi Menu (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-6 custom-scroll pb-20">
+            
+            <!-- SECTION 1: TENTANG KAMI -->
+            <div class="mb-10">
+                <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i> Tentang Kami
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-6 text-justify">
+                    Komisi Remaja GKI Grand Wisata adalah wadah bagi generasi muda untuk bertumbuh bersama dalam iman, pengharapan, dan kasih. Kami rindu melihat setiap remaja mengalami perjumpaan pribadi dengan Kristus dan berdampak bagi sesama.
+                </p>
+
+                <!-- Struktur Pengurus -->
+                <h4 class="font-semibold text-gray-700 mb-4 border-l-4 border-blue-500 pl-3">Struktur Pengurus 2026</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    
+                    <!-- Card Pengurus 1 -->
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100 shadow-sm">
+                        <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-300 overflow-hidden">
+                            <!-- GANTI DENGAN FOTO PENGURUS -->
+                            <img src="https://ui-avatars.com/api/?name=Ketua+Remaja&background=random" alt="Ketua" class="w-full h-full object-cover">
+                        </div>
+                        <h5 class="font-bold text-gray-800 text-sm">Nama Ketua</h5>
+                        <p class="text-xs text-blue-500 font-medium">Ketua Komisi</p>
+                    </div>
+
+                    <!-- Card Pengurus 2 -->
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100 shadow-sm">
+                        <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Sekretaris&background=random" alt="Sekretaris" class="w-full h-full object-cover">
+                        </div>
+                        <h5 class="font-bold text-gray-800 text-sm">Nama Sekretaris</h5>
+                        <p class="text-xs text-blue-500 font-medium">Sekretaris</p>
+                    </div>
+
+                    <!-- Card Pengurus 3 -->
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100 shadow-sm">
+                        <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Bendahara&background=random" alt="Bendahara" class="w-full h-full object-cover">
+                        </div>
+                        <h5 class="font-bold text-gray-800 text-sm">Nama Bendahara</h5>
+                        <p class="text-xs text-blue-500 font-medium">Bendahara</p>
+                    </div>
+
+                    <!-- Card Pengurus 4 -->
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100 shadow-sm">
+                        <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-300 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Divisi+Acara&background=random" alt="Acara" class="w-full h-full object-cover">
+                        </div>
+                        <h5 class="font-bold text-gray-800 text-sm">Nama Sie Acara</h5>
+                        <p class="text-xs text-blue-500 font-medium">Koord. Acara</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <hr class="border-gray-200 my-6">
+
+            <!-- SECTION 2: EVENT CALENDAR -->
+            <div>
+                <h3 class="text-xl font-bold text-purple-600 mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i> Event Calendar
+                </h3>
+
+                <!-- Poster Bulanan -->
+                <div class="mb-6">
+                    <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Poster Ibadah Bulan Ini</p>
+                    <div class="aspect-[4/5] w-full bg-gray-200 rounded-lg overflow-hidden relative group">
+                        <!-- GANTI SRC DENGAN POSTER ASLI -->
+                        <img src="https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Poster Ibadah" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-white font-bold">Januari 2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events List -->
+                <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Upcoming Big Events</p>
+                <div class="space-y-3">
+                    
+                    <!-- Event Item -->
+                    <div class="flex items-center bg-white border-l-4 border-red-500 p-3 shadow-sm rounded-r-lg">
+                        <div class="mr-3 text-center min-w-[3rem]">
+                            <span class="block text-xs font-bold text-gray-400">APR</span>
+                            <span class="block text-xl font-bold text-red-500">TBA</span>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-gray-800 text-sm">Ibadah Paskah</h5>
+                            <p class="text-xs text-gray-500">GKI Grand Wisata, 13.00 WIB</p>
+                        </div>
+                    </div>
+
+                    <!-- Event Item -->
+                    <div class="flex items-center bg-white border-l-4 border-green-500 p-3 shadow-sm rounded-r-lg">
+                        <div class="mr-3 text-center min-w-[3rem]">
+                            <span class="block text-xs font-bold text-gray-400">DES</span>
+                            <span class="block text-xl font-bold text-green-500">TBA</span>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-gray-800 text-sm">Perayaan Natal Remaja</h5>
+                            <p class="text-xs text-gray-500">GKI Grand Wisata, 17.00 WIB</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 5. Main Content (Kartu Profil) -->
+    <div class="glass-card w-full max-w-md rounded-3xl shadow-2xl p-8 text-center animate-fade-in relative overflow-hidden">
+        
+        <!-- Hiasan Lingkaran Blur -->
+        <div class="absolute top-0 left-0 w-40 h-40 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-40 h-40 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-x-1/2 translate-y-1/2"></div>
+
+        <!-- Header / Profile Section -->
+        <div class="relative z-10 mb-8">
+            <div class="w-32 h-32 mx-auto mb-4 p-1 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 shadow-lg">
+                <img 
+                    src="REMAJA GKI GW (4).png" 
+                    onerror="this.src='https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'"
+                    alt="Logo Komisi Remaja" 
+                    class="w-full h-full object-cover rounded-full border-4 border-white bg-white"
+                >
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-1">@remajagkigw</h1>
+            <p class="text-sm text-gray-500 font-medium tracking-wide">BERTUMBUH BERSAMA DALAM IMAN</p>
+            <p class="text-xs text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> GKI Grand Wisata</p>
+            
+            <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/80 backdrop-blur-sm text-blue-800 border border-blue-100 shadow-sm">
+                <span class="w-2 h-2 mr-2 bg-blue-500 rounded-full animate-pulse"></span>
+                Ibadah: Minggu, 09.00 WIB
+            </div>
+        </div>
+
+        <!-- Links Section -->
+        <div class="space-y-4 relative z-10">
+            
+            <a href="https://www.instagram.com/remajagkigw/" target="_blank" class="group block w-full bg-white/90 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white text-gray-700 border border-gray-200 font-semibold py-4 px-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 opacity-0 animate-fade-in delay-100 flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fab fa-instagram text-2xl w-8 group-hover:text-white text-pink-600 transition-colors"></i>
+                    <span class="ml-3">Instagram Kami</span>
+                </div>
+                <i class="fas fa-chevron-right text-sm opacity-50 group-hover:text-white"></i>
+            </a>
+
+            <a href="https://www.youtube.com/@KomisiRemajaGKIGW" target="_blank" class="group block w-full bg-white/90 hover:bg-red-600 hover:text-white text-gray-700 border border-gray-200 font-semibold py-4 px-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 opacity-0 animate-fade-in delay-200 flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fab fa-youtube text-2xl w-8 group-hover:text-white text-red-600 transition-colors"></i>
+                    <span class="ml-3">Channel YouTube</span>
+                </div>
+                <i class="fas fa-chevron-right text-sm opacity-50 group-hover:text-white"></i>
+            </a>
+
+            <a href="https://forms.google.com" target="_blank" class="group block w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 opacity-0 animate-fade-in delay-300 flex items-center justify-between ring-2 ring-offset-2 ring-blue-200">
+                <div class="flex items-center">
+                    <i class="fas fa-praying-hands text-2xl w-8"></i>
+                    <span class="ml-3">Pokok Doa / Prayer Request</span>
+                </div>
+                <i class="fas fa-heart text-sm animate-pulse"></i>
+            </a>
+
+            <a href="https://open.spotify.com" target="_blank" class="group block w-full bg-white/90 hover:bg-green-500 hover:text-white text-gray-700 border border-gray-200 font-semibold py-4 px-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 opacity-0 animate-fade-in delay-400 flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fab fa-spotify text-2xl w-8 group-hover:text-white text-green-500 transition-colors"></i>
+                    <span class="ml-3">Our Music Playlist</span>
+                </div>
+                <i class="fas fa-music text-sm opacity-50 group-hover:text-white"></i>
+            </a>
+
+            <a href="Bible Journaling Perjanjian Baru.pdf" target="_blank" class="group block w-full bg-white/90 hover:bg-yellow-600 hover:text-white text-gray-700 border border-gray-200 font-semibold py-4 px-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 opacity-0 animate-fade-in delay-500 flex items-center justify-between" title="Download Bible Journaling">
+                <div class="flex items-center">
+                    <i class="fas fa-bible text-2xl w-8 group-hover:text-white text-yellow-600 transition-colors"></i>
+                    <div class="text-left ml-3">
+                        <span class="block leading-tight">GEMASS Remaja 2026</span>
+                        <span class="text-[10px] font-normal opacity-60 group-hover:text-white/80 block">Klik untuk buka PDF Journaling</span>
+                    </div>
+                </div>
+                <i class="fas fa-file-pdf text-sm opacity-50 group-hover:text-white"></i>
+            </a>
+
+        </div>
+
+        <div class="mt-10 text-xs text-gray-500 relative z-10">
+            <p>&copy; 2026 Komisi Remaja Youth.</p>
+            <div class="flex justify-center space-x-4 mt-2">
+                <button onclick="shareLink()" class="hover:text-gray-700 transition underline decoration-dotted">
+                    <i class="fas fa-share-alt mr-1"></i> Bagikan Link
+                </button>
+            </div>
+        </div>
+
+        <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg text-sm opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+            Link berhasil disalin!
+        </div>
+
+    </div>
+
+    <script>
+        function shareLink() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: '@remajagkigw',
+                    text: 'Yuk cek link Komisi Remaja!',
+                    url: url,
+                });
+            } else {
+                const el = document.createElement('textarea');
+                el.value = url;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0');
+                }, 2000);
+            }
+        }
+        
+        // Logika untuk Menu (Hamburger)
+        function toggleMenu() {
+            const menu = document.getElementById('menuOverlay');
+            if (menu.classList.contains('invisible')) {
+                // Buka Menu
+                menu.classList.remove('invisible', 'opacity-0');
+            } else {
+                // Tutup Menu
+                menu.classList.add('opacity-0');
+                setTimeout(() => {
+                    menu.classList.add('invisible');
+                }, 300); // Tunggu animasi selesai
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var video = document.querySelector('video');
+            if(video) {
+                video.play().catch(function(error) {
+                    console.log("Autoplay dicegah oleh browser, perlu interaksi user.");
+                });
+            }
+        });
+    </script>
+</body>
+</html>
