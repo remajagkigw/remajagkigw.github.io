@@ -12,6 +12,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* --- CSS UNTUK FITUR INSIGHT --- */
+.insight-section-wrapper {
+    background: #f4f4f9; /* Bisa diganti sesuai warna web kamu */
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+.insight-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.insight-input, .insight-textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Penting agar rapi */
+}
+.insight-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff; /* Ganti warna tombol sesuai tema */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.insight-card {
+    background: #fff;
+    border-left: 4px solid #007bff;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
         body {
             font-family: 'Poppins', sans-serif;
             overflow-x: hidden;
@@ -149,6 +187,28 @@
                 <p class="text-gray-600 text-sm leading-relaxed mb-6 text-justify">
                     Komisi Remaja GKI Grand Wisata adalah wadah bagi generasi muda untuk bertumbuh bersama dalam iman, pengharapan, dan kasih. Kami rindu melihat setiap remaja mengalami perjumpaan pribadi dengan Kristus dan berdampak bagi sesama.
                 </p>
+
+                <section id="insight-feature" class="insight-section-wrapper">
+    <div class="container"> <h2 style="text-align: center; font-weight: bold;">Insight Remaja</h2>
+        <p style="text-align: center; font-weight: bold;">Apa berkat yang kamu dapat minggu ini?</p>
+
+        <div class="insight-box">
+            <form id="insightForm">
+                <label>Nama:</label>
+                <input type="text" id="insightName" class="insight-input" placeholder="Nama (Opsional)">
+                
+                <label>Insight:</label>
+                <textarea id="insightMessage" class="insight-textarea" style="height:80px" placeholder="Tuliskan berkatmu..." required></textarea>
+                
+                <button type="submit" id="insightSubmitBtn" class="insight-btn">Kirim Insight</button>
+            </form>
+
+            <div id="insight-list" style="margin-top: 20px;">
+                <p style="text-align: center; color: #aaa;">Memuat insight...</p>
+            </div>
+        </div>
+    </div>
+</section>
 
                 <!-- Struktur Pengurus -->
                 <h4 class="font-semibold text-gray-700 mb-4 border-l-4 border-blue-500 pl-3">Struktur Pengurus 2026</h4>
@@ -387,5 +447,76 @@
             }
         });
     </script>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // --- PASTE CONFIG FIREBASE KAMU DI SINI ---
+    const firebaseConfig = {
+        apiKey: "AIAIzaSyB3Wd2BsmcEOQP1ZnvKlVH5t81ZrPPTLJQzaSyD-....", 
+        authDomain: "remajagkigw-insight.firebaseapp.com",
+        projectId: "remajagkigw-insight",
+        storageBucket: "remajagkigw-insight.firebasestorage.app",
+        messagingSenderId: "722034814917",
+        appId: "1:722034814917:web:8fbdf43c4422bf535225ac"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('insightForm');
+    const submitBtn = document.getElementById('insightSubmitBtn');
+    const listContainer = document.getElementById('insight-list');
+
+    // Logic Kirim
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('insightName').value;
+        const msgInput = document.getElementById('insightMessage').value;
+
+        if(!msgInput.trim()) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Mengirim...";
+
+        try {
+            await addDoc(collection(db, "insights"), {
+                name: nameInput || "Jemaat",
+                message: msgInput,
+                createdAt: serverTimestamp()
+            });
+            form.reset();
+        } catch (error) {
+            console.error(error);
+            alert("Gagal mengirim.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Kirim Insight";
+        }
+    });
+
+    // Logic Tampil Data
+    const q = query(collection(db, "insights"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+        listContainer.innerHTML = "";
+        if (snapshot.empty) {
+            listContainer.innerHTML = "<p style='text-align:center; color:#aaa'>Belum ada insight.</p>";
+            return;
+        }
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('id-ID') : "";
+            
+            const card = document.createElement('div');
+            card.className = 'insight-card';
+            card.innerHTML = `
+                <div style="font-weight:bold; font-size:0.9em">${data.name} <span style="font-weight:normal; color:#888; font-size:0.8em; margin-left:5px">${date}</span></div>
+                <div style="margin-top:5px; color:#444;">${data.message}</div>
+            `;
+            listContainer.appendChild(card);
+        });
+    });
+</script>
 </body>
 </html>
