@@ -13,6 +13,15 @@
     
     <style>
         /* --- CSS UNTUK FITUR INSIGHT --- */
+
+        /* Animasi sederhana saat tombol like diklik */
+.like-btn {
+    transition: transform 0.2s;
+}
+.like-btn:active {
+    transform: scale(1.3);
+}
+
 .insight-section-wrapper {
     background: #f4f4f9; /* Bisa diganti sesuai warna web kamu */
     padding: 40px 20px;
@@ -542,7 +551,8 @@
 
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    // PERUBAHAN: Kita menambahkan doc, updateDoc, dan increment untuk fitur Like
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     // --- PASTE CONFIG FIREBASE KAMU DI SINI ---
     const firebaseConfig = {
@@ -562,9 +572,9 @@
     const listContainer = document.getElementById('insight-list');
     const monthFilter = document.getElementById('monthFilter');
 
-    let allInsights = []; // Variabel untuk menyimpan semua data dari database
+    let allInsights = []; 
 
-    // Logic Kirim Data
+    // --- 1. LOGIC KIRIM DATA BARU ---
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nameInput = document.getElementById('insightName').value;
@@ -579,7 +589,8 @@
             await addDoc(collection(db, "insights"), {
                 name: nameInput || "Jemaat",
                 message: msgInput,
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                likes: 0 // <--- PERUBAHAN: Insight baru otomatis punya 0 Like
             });
             form.reset();
         } catch (error) {
@@ -591,11 +602,10 @@
         }
     });
 
-    // Fungsi untuk menampilkan data ke layar
+    // --- 2. LOGIC TAMPILKAN DATA (RENDER) ---
     function renderInsights(filterValue) {
-        listContainer.innerHTML = ""; // Bersihkan list
+        listContainer.innerHTML = ""; 
         
-        // Filter data berdasarkan bulan yang dipilih
         let filteredData = allInsights;
         if (filterValue !== 'all') {
             filteredData = allInsights.filter(item => item.monthYear === filterValue);
@@ -606,30 +616,40 @@
             return;
         }
 
-        // Tampilkan data yang sudah difilter
+        // Cek LocalStorage: Insight mana saja yang sudah di-like oleh HP ini
+        let likedInsights = JSON.parse(localStorage.getItem('likedInsights')) || [];
+
         filteredData.forEach((data) => {
+            // Cek apakah insight ini ada di daftar "sudah di-like"
+            const isLiked = likedInsights.includes(data.id);
+            const heartColor = isLiked ? '#ff4d4d' : '#ccc'; // Merah kalau sudah like, abu-abu kalau belum
+
             const card = document.createElement('div');
             card.className = 'insight-card';
             card.innerHTML = `
                 <div style="font-weight:bold; font-size:0.9em; color:#333;">${data.name}</div>
                 <div style="font-weight:normal; color:#888; font-size:0.8em; margin-bottom: 8px;">${data.dateFormatted}</div>
-                <div style="color:#444; line-height: 1.4; font-size: 0.95em;">${data.message}</div>
+                <div style="color:#444; line-height: 1.4; font-size: 0.95em; margin-bottom: 15px;">${data.message}</div>
+                
+                <div style="display: flex; align-items: center; gap: 5px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <button class="like-btn" data-id="${data.id}" style="background:none; border:none; cursor:pointer; font-size:1.2em; color:${heartColor}; padding:0;">❤️</button>
+                    <span style="font-size:0.9em; color:#555; font-weight:bold;">${data.likes}</span>
+                </div>
             `;
             listContainer.appendChild(card);
         });
     }
 
-    // Logic Ambil Data dari Firebase (Real-time)
+    // --- 3. LOGIC AMBIL DATA FIREBASE ---
     const q = query(collection(db, "insights"), orderBy("createdAt", "desc"));
     
     onSnapshot(q, (snapshot) => {
-        allInsights = []; // Reset array
-        let monthsSet = new Set(); // Menggunakan Set agar tidak ada bulan ganda
+        allInsights = []; 
+        let monthsSet = new Set(); 
 
         snapshot.forEach((doc) => {
             const data = doc.data();
             
-            // Format Tanggal
             let dateObj = new Date();
             let dateFormatted = "Baru saja";
             let monthYear = "Bulan Ini";
@@ -637,39 +657,60 @@
             if (data.createdAt) {
                 dateObj = new Date(data.createdAt.seconds * 1000);
                 dateFormatted = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                // Format "Bulan Tahun" (Contoh: Februari 2026) untuk filter
                 monthYear = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
             }
 
-            // Tambahkan data ke array
             allInsights.push({
+                id: doc.id, // <--- PERUBAHAN: Simpan ID unik tiap pesan
                 name: data.name,
                 message: data.message,
                 dateFormatted: dateFormatted,
-                monthYear: monthYear
+                monthYear: monthYear,
+                likes: data.likes || 0 // <--- PERUBAHAN: Simpan jumlah like
             });
 
-            monthsSet.add(monthYear); // Simpan nama bulan ke dalam daftar filter
+            monthsSet.add(monthYear); 
         });
 
-        // Update pilihan dropdown (Filter)
         const currentSelection = monthFilter.value;
         monthFilter.innerHTML = '<option value="all">Semua Bulan</option>';
         monthsSet.forEach(month => {
             const option = document.createElement('option');
             option.value = month;
             option.textContent = month;
-            if (month === currentSelection) option.selected = true; // Pertahankan pilihan saat ini
+            if (month === currentSelection) option.selected = true; 
             monthFilter.appendChild(option);
         });
 
-        // Jalankan fungsi render
         renderInsights(monthFilter.value);
     });
 
-    // Event Listener untuk Filter (Saat dropdown diganti)
     monthFilter.addEventListener('change', (e) => {
         renderInsights(e.target.value);
+    });
+
+    // --- 4. LOGIC SAAT TOMBOL LIKE DIKLIK ---
+    listContainer.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        if (!likeBtn) return; // Kalau yang diklik bukan tombol like, abaikan
+        
+        const insightId = likeBtn.dataset.id;
+        const docRef = doc(db, "insights", insightId);
+        
+        // Ambil catatan like dari memori HP
+        let likedInsights = JSON.parse(localStorage.getItem('likedInsights')) || [];
+        
+        if (likedInsights.includes(insightId)) {
+            // UNLIKE: Hapus dari memori, kurangi 1 di database
+            likedInsights = likedInsights.filter(id => id !== insightId);
+            localStorage.setItem('likedInsights', JSON.stringify(likedInsights));
+            await updateDoc(docRef, { likes: increment(-1) });
+        } else {
+            // LIKE: Tambahkan ke memori, tambah 1 di database
+            likedInsights.push(insightId);
+            localStorage.setItem('likedInsights', JSON.stringify(likedInsights));
+            await updateDoc(docRef, { likes: increment(1) });
+        }
     });
 
 </script>
