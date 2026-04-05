@@ -144,6 +144,63 @@
             background: #888;
             border-radius: 3px;
         }
+
+        .insight-filter-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        margin-bottom: 10px;
+    }
+    .insight-filter-container select {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-family: inherit;
+    }
+
+    /* Mengubah list menjadi Carousel Geser */
+    #insight-list {
+        display: flex;
+        overflow-x: auto; /* Memungkinkan geser ke samping */
+        gap: 15px; /* Jarak antar kartu */
+        padding-bottom: 15px; /* Ruang untuk scrollbar */
+        
+        /* Membuat scroll lebih halus di HP */
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch; 
+    }
+
+    /* Desain Kartu (Ukurannya dibatasi agar tidak melebar penuh) */
+    .insight-card {
+        background: #fff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        
+        /* Lebar pasti kartu */
+        min-width: 260px; 
+        max-width: 260px;
+        flex: 0 0 auto; /* Mencegah kartu mengecil */
+        scroll-snap-align: start; /* Berhenti pas di kartu saat digeser */
+    }
+
+    /* Mempercantik Scrollbar di Laptop/PC */
+    #insight-list::-webkit-scrollbar {
+        height: 8px;
+    }
+    #insight-list::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+        border-radius: 4px;
+    }
+    #insight-list::-webkit-scrollbar-thumb {
+        background: #c1c1c1; 
+        border-radius: 4px;
+    }
+    #insight-list::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8; 
+    }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -188,24 +245,32 @@
                     Komisi Remaja GKI Grand Wisata adalah wadah bagi generasi muda untuk bertumbuh bersama dalam iman, pengharapan, dan kasih. Kami rindu melihat setiap remaja mengalami perjumpaan pribadi dengan Kristus dan berdampak bagi sesama.
                 </p>
 
-                <section id="insight-feature" class="insight-section-wrapper">
-    <div class="container"> <h2 style="text-align: center; font-weight: bold;">Insight Remaja</h2>
-        <p style="text-align: center; font-weight: bold;">Apa berkat yang kamu dapat minggu ini?</p>
+                <section id="insight-feature" class="insight-section-wrapper" style="background: #f4f4f9; padding: 40px 20px;">
+    <div class="container" style="max-width: 800px; margin: auto;"> 
+        <h2 style="text-align: center;">Insight Jemaat</h2>
+        <p style="text-align: center;">Apa berkat yang kamu dapat minggu ini?</p>
 
-        <div class="insight-box">
+        <!-- Form Input (Sama seperti sebelumnya) -->
+        <div class="insight-box" style="background: white; padding: 20px; border-radius: 8px;">
             <form id="insightForm">
-                <label>Nama:</label>
-                <input type="text" id="insightName" class="insight-input" placeholder="Nama (Opsional)">
-                
-                <label>Insight:</label>
-                <textarea id="insightMessage" class="insight-textarea" style="height:80px" placeholder="Tuliskan berkatmu..." required></textarea>
-                
-                <button type="submit" id="insightSubmitBtn" class="insight-btn">Kirim Insight</button>
+                <input type="text" id="insightName" class="insight-input" style="width: 100%; padding: 10px; margin-bottom: 10px;" placeholder="Nama (Opsional)">
+                <textarea id="insightMessage" class="insight-textarea" style="width: 100%; padding: 10px; margin-bottom: 10px; height:80px" placeholder="Tuliskan berkatmu..." required></textarea>
+                <button type="submit" id="insightSubmitBtn" class="insight-btn" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px;">Kirim Insight</button>
             </form>
+        </div>
 
-            <div id="insight-list" style="margin-top: 20px;">
-                <p style="text-align: center; color: #aaa;">Memuat insight...</p>
-            </div>
+        <!-- Filter Bulan -->
+        <div class="insight-filter-container">
+            <h3 style="margin: 0; font-size: 1.2em;">Daftar Insight</h3>
+            <select id="monthFilter">
+                <option value="all">Semua Bulan</option>
+                <!-- Pilihan bulan akan diisi otomatis oleh JavaScript -->
+            </select>
+        </div>
+
+        <!-- Container Carousel -->
+        <div id="insight-list">
+            <p style="text-align: center; color: #aaa; width: 100%;">Memuat insight...</p>
         </div>
     </div>
 </section>
@@ -481,7 +546,7 @@
 
     // --- PASTE CONFIG FIREBASE KAMU DI SINI ---
     const firebaseConfig = {
-        apiKey: "AIAIzaSyB3Wd2BsmcEOQP1ZnvKlVH5t81ZrPPTLJQzaSyD-....", 
+        apiKey: "AIzaSyB3Wd2BsmcEOQP1ZnvKlVH5t81ZrPPTLJQ",
         authDomain: "remajagkigw-insight.firebaseapp.com",
         projectId: "remajagkigw-insight",
         storageBucket: "remajagkigw-insight.firebasestorage.app",
@@ -495,8 +560,11 @@
     const form = document.getElementById('insightForm');
     const submitBtn = document.getElementById('insightSubmitBtn');
     const listContainer = document.getElementById('insight-list');
+    const monthFilter = document.getElementById('monthFilter');
 
-    // Logic Kirim
+    let allInsights = []; // Variabel untuk menyimpan semua data dari database
+
+    // Logic Kirim Data
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nameInput = document.getElementById('insightName').value;
@@ -523,27 +591,87 @@
         }
     });
 
-    // Logic Tampil Data
-    const q = query(collection(db, "insights"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-        listContainer.innerHTML = "";
-        if (snapshot.empty) {
-            listContainer.innerHTML = "<p style='text-align:center; color:#aaa'>Belum ada insight.</p>";
+    // Fungsi untuk menampilkan data ke layar
+    function renderInsights(filterValue) {
+        listContainer.innerHTML = ""; // Bersihkan list
+        
+        // Filter data berdasarkan bulan yang dipilih
+        let filteredData = allInsights;
+        if (filterValue !== 'all') {
+            filteredData = allInsights.filter(item => item.monthYear === filterValue);
+        }
+
+        if (filteredData.length === 0) {
+            listContainer.innerHTML = `<p style="text-align:center; color:#aaa; width: 100%;">Belum ada insight di bulan ini.</p>`;
             return;
         }
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('id-ID') : "";
-            
+
+        // Tampilkan data yang sudah difilter
+        filteredData.forEach((data) => {
             const card = document.createElement('div');
             card.className = 'insight-card';
             card.innerHTML = `
-                <div style="font-weight:bold; font-size:0.9em">${data.name} <span style="font-weight:normal; color:#888; font-size:0.8em; margin-left:5px">${date}</span></div>
-                <div style="margin-top:5px; color:#444;">${data.message}</div>
+                <div style="font-weight:bold; font-size:0.9em; color:#333;">${data.name}</div>
+                <div style="font-weight:normal; color:#888; font-size:0.8em; margin-bottom: 8px;">${data.dateFormatted}</div>
+                <div style="color:#444; line-height: 1.4; font-size: 0.95em;">${data.message}</div>
             `;
             listContainer.appendChild(card);
         });
+    }
+
+    // Logic Ambil Data dari Firebase (Real-time)
+    const q = query(collection(db, "insights"), orderBy("createdAt", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        allInsights = []; // Reset array
+        let monthsSet = new Set(); // Menggunakan Set agar tidak ada bulan ganda
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // Format Tanggal
+            let dateObj = new Date();
+            let dateFormatted = "Baru saja";
+            let monthYear = "Bulan Ini";
+
+            if (data.createdAt) {
+                dateObj = new Date(data.createdAt.seconds * 1000);
+                dateFormatted = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                // Format "Bulan Tahun" (Contoh: Februari 2026) untuk filter
+                monthYear = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            }
+
+            // Tambahkan data ke array
+            allInsights.push({
+                name: data.name,
+                message: data.message,
+                dateFormatted: dateFormatted,
+                monthYear: monthYear
+            });
+
+            monthsSet.add(monthYear); // Simpan nama bulan ke dalam daftar filter
+        });
+
+        // Update pilihan dropdown (Filter)
+        const currentSelection = monthFilter.value;
+        monthFilter.innerHTML = '<option value="all">Semua Bulan</option>';
+        monthsSet.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            option.textContent = month;
+            if (month === currentSelection) option.selected = true; // Pertahankan pilihan saat ini
+            monthFilter.appendChild(option);
+        });
+
+        // Jalankan fungsi render
+        renderInsights(monthFilter.value);
     });
+
+    // Event Listener untuk Filter (Saat dropdown diganti)
+    monthFilter.addEventListener('change', (e) => {
+        renderInsights(e.target.value);
+    });
+
 </script>
 <script src='https://cdn.jotfor.ms/agent/embedjs/019c9550233e77818a1cc6b7c2e2b5b873b1/embed.js'>
 </script>
