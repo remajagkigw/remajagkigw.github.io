@@ -210,6 +210,84 @@
     #insight-list::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8; 
     }
+
+    /* --- CSS UNTUK FOOTER GLASSMORPHISM --- */
+.glass-footer {
+    background: rgba(255, 255, 255, 0.35); /* Transparan putih */
+    backdrop-filter: blur(12px); /* Efek kaca buram */
+    -webkit-backdrop-filter: blur(12px); /* Untuk Safari/iPhone */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 25px 20px;
+    margin: 30px auto 20px auto;
+    max-width: 450px; /* Lebar menyesuaikan menu di atasnya */
+    text-align: center;
+    color: #333; /* Warna teks abu gelap supaya terbaca */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    font-family: inherit;
+}
+
+.footer-ayat {
+    margin-bottom: 20px;
+}
+
+.footer-ayat h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.85em;
+    color: #4F46E5; /* Warna ungu menyesuaikan tombol di menu */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer-ayat #teks-ayat {
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin: 0 0 5px 0;
+}
+
+.footer-ayat #kitab-ayat {
+    font-weight: bold;
+    font-size: 0.8em;
+    color: #555;
+    margin: 0;
+}
+
+.footer-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 15px 0;
+}
+
+.footer-info {
+    font-size: 0.85em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.footer-info p {
+    margin: 8px 0;
+}
+
+.footer-link {
+    color: #4F46E5;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+.footer-credit {
+    font-size: 0.75em;
+    color: #666;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 15px;
+}
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -484,8 +562,43 @@
 
         </div>
 
-        <div class="mt-10 text-xs text-gray-500 relative z-10">
-            <p>&copy; 2026 Komisi Remaja Youth.</p>
+            <div class="glass-footer">
+    
+    <div class="footer-ayat">
+        <h4>📖 Ayat Hari Ini</h4>
+        <p id="teks-ayat">"Memuat ayat..."</p>
+        <p id="kitab-ayat">-</p>
+    </div>
+
+    <hr class="footer-divider">
+
+    <div class="footer-info">
+        <p><strong> Contact Person:</strong><br>
+           Pembina: <a href="https://wa.me/6281281024211" class="footer-link">0812-8102-4211 (Kak Palupi)</a><br>
+           Pengurus: <a href="https://wa.me/6287773912102" class="footer-link">0877-7391-2102 (Kimi)</a>
+        </p>
+
+        <p><strong> Alamat Gereja:</strong><br>
+           GKI Grand Wisata<br>
+           Jl. Celebration Boulevard Blok BA1 No. 55-56
+           Lambangsari, Kec. Tambun Sel., Kabupaten Bekasi, Jawa Barat 17510
+        </p>
+
+        <p><strong> Website Gereja:</strong><br>
+           <a href="https://www.gkigrandwisata.or.id" target="_blank" class="footer-link">gkigrandwisata.or.id</a>
+        </p>
+        </div>
+
+        <hr class="footer-divider">
+
+        <div class="footer-credit">
+        <p>Managed by Sie Pubdekdok 2026</p>
+      </div>
+
+    </div>
+
+            <div class="mt-10 text-xs text-gray-500 relative z-10">
+            <p>&copy; 2026 Komisi Remaja.</p>
             <div class="flex justify-center space-x-4 mt-2">
                 <button onclick="shareLink()" class="hover:text-gray-700 transition underline decoration-dotted">
                     <i class="fas fa-share-alt mr-1"></i> Bagikan Link
@@ -497,7 +610,7 @@
             Link berhasil disalin!
         </div>
 
-    </div>
+</div>
 
     <script>
         function shareLink() {
@@ -713,6 +826,26 @@
         }
     });
 
+</script>
+
+<script type="module">
+    // 1. Panggil daftar ayat dari file ayat.js
+    import daftarAyat from './ayat.js';
+
+    // 2. Ambil tanggal hari ini (waktu lokal di HP/Laptop jemaat)
+    const hariIni = new Date();
+    
+    // 3. Bikin angka unik untuk hari ini (Contoh: 6 April 2026 jadi angka 20260406)
+    const angkaUnikHariIni = (hariIni.getFullYear() * 10000) + ((hariIni.getMonth() + 1) * 100) + hariIni.getDate();
+
+    // 4. Pilih ayat menggunakan sisa bagi (modulo). 
+    // Ini menjamin ayat tidak berganti meskipun di-refresh berkali-kali di hari yang sama!
+    const indexPilihan = angkaUnikHariIni % daftarAyat.length;
+    const ayatTerpilih = daftarAyat[indexPilihan];
+
+    // 5. Tampilkan ke dalam HTML
+    document.getElementById('teks-ayat').innerText = `"${ayatTerpilih.teks}"`;
+    document.getElementById('kitab-ayat').innerText = ayatTerpilih.kitab;
 </script>
 <script src='https://cdn.jotfor.ms/agent/embedjs/019c9550233e77818a1cc6b7c2e2b5b873b1/embed.js'>
 </script>
